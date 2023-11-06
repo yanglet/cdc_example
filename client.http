@@ -35,8 +35,12 @@ Content-Type: application/json
   }
 }
 
-### 1. 커넥터 조회
+### 1-1. 커넥터 조회
 GET localhost:8083/connectors
+Content-Type: application/json
+
+### 1-2. 커넥터 상태 조회
+GET localhost:8083/connectors/example-connector/status
 Content-Type: application/json
 
 // 토픽 이름
