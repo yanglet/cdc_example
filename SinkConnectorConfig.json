@@ -1,0 +1,63 @@
+[
+  {
+    "name": "redis-sink-connector",
+    "config": {
+      "connector.class": "com.github.jcustenborder.kafka.connect.redis.RedisSinkConnector",
+      "tasks.max": "1",
+      "topics": "my-data-topic,second-topic,third-topic,forth-topic",
+      "input.data.format": "STRING",
+      "redis.hosts": "localhost:6379",
+      "redis.db": "1",
+      "transforms": "topicToKeyTransformer",
+      "transforms.topicToKeyTransformer.type": "com.wowmything.kafka.connect.TopicToKeyTransformer",
+      "key.converter": "org.apache.kafka.connect.storage.StringConverter",
+      "value.converter": "org.apache.kafka.connect.storage.StringConverter"
+    }
+  },
+  {
+    "name": "es-connector",
+    "config": {
+      "connector.class": "io.confluent.connect.elasticsearch.ElasticsearchSinkConnector",
+      "connection.url": "http://10.0.100.9:9200",
+      "tasks.max": "1",
+      "topics": "NCP_MYSQL.test.member", // 컨슈밍할 topic 이름
+      "type.name": "_doc",
+      "value.converter": "org.apache.kafka.connect.json.JsonConverter",
+      "key.converter": "org.apache.kafka.connect.json.JsonConverter",
+      "key.converter.schemas.enable": "true",
+      "value.converter.schemas.enable": "true",
+      "transforms": "extractKey",
+      "transforms.extractKey.type": "org.apache.kafka.connect.transforms.ExtractField$Key",
+      "transforms.extractKey.field": "id", // source connector와 연결된 DB 테이블에서 사용하는 pk명
+      "behavior.on.null.values": "IGNORE"
+    }
+  },
+  {
+    "name": "source-test-connector",
+    "config": {
+      "connector.class": "io.debezium.connector.mysql.MySqlConnector",
+      "tasks.max": "1",
+      "database.hostname": "mysql",
+      "database.port": "3306",
+      "database.user": "mysqluser",
+      "database.password": "mysqlpw",
+      "database.server.id": "184054",
+      "database.server.name": "dbserver1",
+      "database.allowPublicKeyRetrieval": "true",
+      "database.include.list": "testdb",
+      "database.history.kafka.bootstrap.servers": "kafka:9092",
+      "database.history.kafka.topic": "dbhistory.testdb",
+      "key.converter": "org.apache.kafka.connect.json.JsonConverter",
+      "key.converter.schemas.enable": "true",
+      "value.converter": "org.apache.kafka.connect.json.JsonConverter",
+      "value.converter.schemas.enable": "true",
+      "transforms": "unwrap,addTopicPrefix",
+      "transforms.unwrap.type": "io.debezium.transforms.ExtractNewRecordState",
+      "transforms.unwrap.drop.tombstones": "false",
+      "transforms.unwrap.delete.handling.mode": "rewrite",
+      "transforms.addTopicPrefix.type": "org.apache.kafka.connect.transforms.RegexRouter",
+      "transforms.addTopicPrefix.regex": "(.*)",
+      "transforms.addTopicPrefix.replacement": "$1"
+    }
+  }
+]
